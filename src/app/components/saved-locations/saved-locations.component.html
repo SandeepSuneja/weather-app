@@ -1,0 +1,31 @@
+<section class="saved-section card">
+  <h3>{{ 'saved.title' | t }}</h3>
+  <p *ngIf="savedLoading">{{ 'saved.refreshing' | t }}</p>
+  <div class="saved-grid" *ngIf="!savedLoading">
+    <article
+      class="saved-item"
+      *ngFor="let saved of savedLocationWeather"
+      [class.selected]="isSelected(saved.location)"
+      role="button"
+      tabindex="0"
+      (click)="openLocation.emit(saved.location)"
+      (keydown.enter)="openLocation.emit(saved.location)"
+      (keydown.space)="openLocation.emit(saved.location); $event.preventDefault()"
+    >
+      <div>
+        <strong>{{ saved.locationName }}</strong>
+        <p>{{ weatherIcon(saved.current.weatherCode) }} {{ saved.current.temperature | number : '1.0-0' }}°C</p>
+        <p class="air-quality">AQI {{ saved.pollution.usAqi ?? 'N/A' }} | PM2.5 {{ saved.pollution.pm2_5 ?? 'N/A' }}</p>
+      </div>
+      <div class="saved-actions">
+        <button
+          type="button"
+          class="mini-btn danger"
+          (click)="removeLocation.emit(saved.location); $event.stopPropagation()"
+        >
+          {{ 'saved.remove' | t }}
+        </button>
+      </div>
+    </article>
+  </div>
+</section>

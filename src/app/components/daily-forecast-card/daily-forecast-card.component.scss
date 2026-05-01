@@ -1,0 +1,20 @@
+.card {
+  border-radius: 18px;
+  padding: 1.2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 9%);
+}
+
+.day:last-child {
+  border-bottom: 0;
+}

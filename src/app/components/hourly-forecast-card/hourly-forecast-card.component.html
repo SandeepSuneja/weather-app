@@ -1,0 +1,13 @@
+<article class="hourly card">
+  <div class="card-head">
+    <h3>{{ 'hourly.title' | t }}</h3>
+    <p>{{ 'hourly.trend' | t }}</p>
+  </div>
+  <div class="timeline">
+    <div class="hour" *ngFor="let hour of hourlyData">
+      <p class="hour-time">{{ hour.time | date : 'shortTime' }}</p>
+      <div class="hour-icon">{{ weatherIcon(hour.weatherCode) }}</div>
+      <strong class="hour-temp">{{ hour.temperature | number : '1.0-0' }}°</strong>
+    </div>
+  </div>
+</article>

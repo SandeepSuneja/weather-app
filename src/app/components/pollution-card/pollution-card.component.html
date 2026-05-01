@@ -1,0 +1,46 @@
+<article class="pollution card">
+  <div class="head">
+    <h3>{{ 'pollution.title' | t }}</h3>
+    <span class="aqi-pill" [class]="aqiClass(pollution.usAqi)">
+      AQI {{ pollution.usAqi ?? 'N/A' }} - {{ aqiStatus(pollution.usAqi) | t }}
+    </span>
+  </div>
+
+  <div class="pollution-grid">
+    <button type="button" class="metric">
+      <div class="metric-top">
+        <span>PM2.5</span>
+        <strong>{{ pollution.pm2_5 ?? 'N/A' }}</strong>
+      </div>
+      <div class="bar"><span [style.width.%]="metricPercent(pollution.pm2_5, 120)"></span></div>
+      <small>ug/m3</small>
+    </button>
+
+    <button type="button" class="metric">
+      <div class="metric-top">
+        <span>PM10</span>
+        <strong>{{ pollution.pm10 ?? 'N/A' }}</strong>
+      </div>
+      <div class="bar"><span [style.width.%]="metricPercent(pollution.pm10, 180)"></span></div>
+      <small>ug/m3</small>
+    </button>
+
+    <button type="button" class="metric">
+      <div class="metric-top">
+        <span>NO2</span>
+        <strong>{{ pollution.nitrogenDioxide ?? 'N/A' }}</strong>
+      </div>
+      <div class="bar"><span [style.width.%]="metricPercent(pollution.nitrogenDioxide, 200)"></span></div>
+      <small>ug/m3</small>
+    </button>
+
+    <button type="button" class="metric">
+      <div class="metric-top">
+        <span>Ozone</span>
+        <strong>{{ pollution.ozone ?? 'N/A' }}</strong>
+      </div>
+      <div class="bar"><span [style.width.%]="metricPercent(pollution.ozone, 240)"></span></div>
+      <small>ug/m3</small>
+    </button>
+  </div>
+</article>

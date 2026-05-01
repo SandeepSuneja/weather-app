@@ -1,0 +1,11 @@
+<article class="current card">
+  <h2>{{ weatherData.locationName }}</h2>
+  <p class="condition">
+    <span>{{ weatherIcon(weatherData.current.weatherCode) }}</span>
+    <span class="label">{{ weatherLabel(weatherData.current.weatherCode) | t }}</span>
+  </p>
+  <div class="temp">{{ weatherData.current.temperature | number : '1.0-0' }}°C</div>
+  <p>{{ 'current.feelsLike' | t }} {{ weatherData.current.feelsLike | number : '1.0-0' }}°C</p>
+  <p>{{ 'current.humidity' | t }} {{ weatherData.current.humidity }}%</p>
+  <p>{{ 'current.wind' | t }} {{ weatherData.current.windSpeed }} km/h</p>
+</article>

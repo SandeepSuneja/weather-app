@@ -1,0 +1,70 @@
+.card {
+  border-radius: 18px;
+  padding: 1.2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.card-head h3 {
+  margin: 0;
+}
+
+.card-head p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.timeline {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(78px, 1fr);
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding: 0.2rem 0 0.45rem;
+}
+
+.hour {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  text-align: center;
+  padding: 0.65rem 0.45rem;
+  border-radius: 14px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border-color);
+  transition: transform 180ms ease;
+}
+
+.hour:hover {
+  transform: translateY(-2px);
+}
+
+.hour-time {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.hour-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 14%);
+  font-size: 1.05rem;
+}
+
+.hour-temp {
+  font-size: 1.05rem;
+  line-height: 1;
+}

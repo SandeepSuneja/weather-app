@@ -1,4 +1,56 @@
+<main class="app-shell" [class]="themeClass" [style.background-image]="'url(' + bgImageUrl + ')'">
+  <div class="overlay"></div>
 
-  <cities></cities>
+  <section class="content" @fadeUp>
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>{{ 'app.title' | t }}</h1>
+          <p>{{ 'app.subtitle' | t }}</p>
+        </div>
+        <label class="language-switcher">
+          <span class="language-label">{{ 'app.language' | t }}</span>
+          <select [value]="i18n.language" (change)="changeLanguage($any($event.target).value)">
+            <option *ngFor="let lang of i18n.supportedLanguages" [value]="lang">
+              {{ languageNames[lang] }}
+            </option>
+          </select>
+        </label>
+      </div>
+    </header>
 
+    <app-location-search
+      [cityControl]="cityControl"
+      [loading]="loading"
+      [locationSuggestions]="locationSuggestions"
+      [currentWeather]="weather"
+      [currentLocationSaved]="isCurrentLocationSaved()"
+      (search)="fetchForCity($event)"
+      (selectSuggestion)="selectSuggestion($event)"
+      (saveCurrent)="addCurrentLocation()"
+    />
 
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <section class="layout">
+      <aside class="left-panel" *ngIf="savedLocations.length || savedLoading" @fadeUp>
+        <app-saved-locations
+          [savedLoading]="savedLoading"
+          [savedLocationWeather]="savedLocationWeather"
+          [selectedLocation]="weather?.location ?? null"
+          (openLocation)="openSavedLocation($event)"
+          (removeLocation)="removeLocation($event)"
+        />
+      </aside>
+
+      <section class="dashboard-wrap" *ngIf="weather as data" @fadeUp>
+        <section class="dashboard">
+          <app-current-weather-card [weatherData]="data" />
+          <app-pollution-card [pollution]="data.pollution" />
+          <app-hourly-forecast-card [hourlyData]="data.hourly" />
+          <app-daily-forecast-card [dailyData]="data.daily" />
+        </section>
+      </section>
+    </section>
+  </section>
+</main>

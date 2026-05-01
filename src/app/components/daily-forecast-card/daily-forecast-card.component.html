@@ -1,0 +1,8 @@
+<article class="daily card">
+  <h3>{{ 'daily.title' | t }}</h3>
+  <div class="day" *ngFor="let day of dailyData">
+    <p>{{ day.date | date : 'EEE, MMM d' }}</p>
+    <p>{{ weatherIcon(day.weatherCode) }}</p>
+    <p>{{ day.minTemp | number : '1.0-0' }}° / {{ day.maxTemp | number : '1.0-0' }}°</p>
+  </div>
+</article>

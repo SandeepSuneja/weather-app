@@ -1,0 +1,67 @@
+.card {
+  border-radius: 18px;
+  padding: 1.2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.saved-section {
+  margin-top: 0.8rem;
+}
+
+.saved-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.saved-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: var(--surface-bg);
+  border: 1px solid transparent;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+}
+
+.saved-item.selected {
+  border-color: var(--primary-btn-start);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 14%);
+  transform: translateX(2px);
+}
+
+.saved-item:focus-visible {
+  outline: 2px solid var(--primary-btn-start);
+  outline-offset: 2px;
+}
+
+.saved-item p {
+  margin: 0.2rem 0;
+}
+
+.air-quality {
+  font-size: 0.86rem;
+  opacity: 0.9;
+}
+
+.saved-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mini-btn {
+  border: 0;
+  border-radius: 9px;
+  padding: 0.5rem 0.7rem;
+  background: var(--hover-bg);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.mini-btn.danger {
+  background: var(--danger-bg);
+}

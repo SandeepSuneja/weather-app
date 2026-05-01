@@ -1,0 +1,22 @@
+.card {
+  border-radius: 18px;
+  padding: 1.2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.condition {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.condition .label {
+  letter-spacing: 0.03em;
+}
+
+.temp {
+  font-size: 3rem;
+  font-weight: 700;
+}

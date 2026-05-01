@@ -1,0 +1,25 @@
+<form class="search-bar" (submit)="$event.preventDefault(); search.emit(cityControl.value)">
+  <input
+    type="text"
+    [formControl]="cityControl"
+    [placeholder]="'search.placeholder' | t"
+    aria-label="Search city"
+  />
+  <button type="button" (click)="search.emit(cityControl.value)" [disabled]="loading">
+    {{ loading ? ('search.loading' | t) : ('search.getWeather' | t) }}
+  </button>
+  <button
+    type="button"
+    class="ghost-btn"
+    (click)="saveCurrent.emit()"
+    [disabled]="!currentWeather || currentLocationSaved"
+  >
+    {{ currentLocationSaved ? ('search.saved' | t) : ('search.saveLocation' | t) }}
+  </button>
+</form>
+
+<ul class="suggestions" *ngIf="locationSuggestions.length && cityControl.value">
+  <li *ngFor="let option of locationSuggestions" (click)="selectSuggestion.emit(option)">
+    {{ option.name }}, {{ option.country }}
+  </li>
+</ul>

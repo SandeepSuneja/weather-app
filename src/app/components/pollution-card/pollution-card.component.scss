@@ -1,0 +1,81 @@
+.card {
+  border-radius: 18px;
+  padding: 1.2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.head h3 {
+  margin: 0;
+}
+
+.aqi-pill {
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-color);
+  background: rgb(148 163 184 / 20%);
+}
+
+.aqi-pill.good { background: rgb(16 185 129 / 26%); }
+.aqi-pill.moderate { background: rgb(245 158 11 / 30%); }
+.aqi-pill.sensitive { background: rgb(249 115 22 / 34%); }
+.aqi-pill.unhealthy { background: rgb(239 68 68 / 34%); }
+.aqi-pill.hazardous { background: rgb(127 29 29 / 44%); }
+
+.pollution-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 0.7rem;
+}
+
+.metric {
+  border: 1px solid var(--border-color);
+  background: var(--surface-bg);
+  color: inherit;
+  text-align: left;
+  border-radius: 12px;
+  padding: 0.65rem;
+  cursor: default;
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.metric:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-btn-start);
+}
+
+.metric-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bar {
+  margin-top: 0.5rem;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 16%);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-btn-start), var(--primary-btn-end));
+}
+
+.metric small {
+  display: inline-block;
+  margin-top: 0.35rem;
+  opacity: 0.82;
+}

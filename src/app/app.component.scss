@@ -1,0 +1,266 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: var(--text-color);
+  font-family:
+    Inter,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 700ms ease;
+  --overlay-top: rgb(2 6 23 / 38%);
+  --overlay-bottom: rgb(2 6 23 / 78%);
+  --text-color: #f4f8ff;
+  --muted-text: rgb(228 238 255 / 84%);
+  --card-bg: rgb(15 23 42 / 62%);
+  --surface-bg: rgb(30 41 59 / 65%);
+  --input-bg: rgb(255 255 255 / 92%);
+  --border-color: rgb(255 255 255 / 16%);
+  --primary-btn-start: #38bdf8;
+  --primary-btn-end: #6366f1;
+  --primary-btn-text: #fff;
+  --ghost-btn-bg: rgb(15 23 42 / 72%);
+  --hover-bg: rgb(56 189 248 / 25%);
+  --shadow-color: rgb(2 6 23 / 25%);
+  --chip-bg: rgb(148 163 184 / 18%);
+  --danger-bg: rgb(239 68 68 / 30%);
+  --error-text: #fecaca;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--overlay-top), var(--overlay-bottom));
+  backdrop-filter: blur(2px);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  width: 90vw;
+  min-height: 90vh;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 2rem 1.2rem 2.4rem;
+}
+
+.hero h1 {
+  margin-bottom: 0.4rem;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.hero p {
+  margin-top: 0;
+  color: var(--muted-text);
+}
+
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--card-bg) 90%, #fff 10%);
+  box-shadow: 0 8px 22px -14px var(--shadow-color);
+}
+
+.language-label {
+  color: var(--muted-text);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.language-switcher select {
+  border: 1px solid var(--border-color);
+  background: rgb(2 6 23 / 22%);
+  color: var(--text-color);
+  border-radius: 9px;
+  padding: 0.42rem 2.2rem 0.42rem 0.7rem;
+  min-width: 11.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-text) 50%),
+    linear-gradient(135deg, var(--muted-text) 50%, transparent 50%);
+  background-position:
+    calc(100% - 0.95rem) calc(50% - 2px),
+    calc(100% - 0.6rem) calc(50% - 2px);
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.language-switcher select:hover {
+  border-color: color-mix(in srgb, var(--border-color) 65%, #fff 35%);
+}
+
+.language-switcher select:focus-visible {
+  border-color: color-mix(in srgb, var(--primary-btn-start) 60%, #fff 40%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-btn-start) 25%, transparent 75%);
+}
+
+.theme-snow .language-switcher select {
+  background: rgb(255 255 255 / 72%);
+}
+
+.theme-snow .language-label {
+  color: rgb(15 23 42 / 80%);
+}
+
+.error {
+  color: var(--error-text);
+  margin-top: 0.8rem;
+}
+
+.layout {
+  margin-top: 1.2rem;
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.left-panel {
+  position: sticky;
+  top: 1rem;
+}
+
+.dashboard-wrap {
+  min-width: 0;
+}
+
+.dashboard {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (width <= 960px) {
+  .hero-top {
+    flex-direction: column;
+  }
+
+  .language-switcher {
+    align-self: flex-start;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .left-panel {
+    position: static;
+  }
+}
+
+@media (width <= 600px) {
+  .content {
+    width: 94vw;
+    min-height: auto;
+    padding: 1.2rem 0.8rem 1.6rem;
+  }
+}
+
+.theme-clear {
+  --overlay-top: rgb(14 116 144 / 35%);
+  --overlay-bottom: rgb(30 64 175 / 58%);
+  --text-color: #f8fbff;
+  --muted-text: rgb(241 245 255 / 90%);
+  --card-bg: rgb(14 116 144 / 35%);
+  --surface-bg: rgb(2 132 199 / 32%);
+  --input-bg: rgb(255 255 255 / 95%);
+  --primary-btn-start: #22d3ee;
+  --primary-btn-end: #2563eb;
+  --ghost-btn-bg: rgb(14 116 144 / 52%);
+  --hover-bg: rgb(125 211 252 / 35%);
+  --chip-bg: rgb(186 230 253 / 25%);
+}
+
+.theme-cloudy {
+  --overlay-top: rgb(51 65 85 / 40%);
+  --overlay-bottom: rgb(15 23 42 / 72%);
+  --text-color: #e7edf7;
+  --muted-text: rgb(203 213 225 / 88%);
+  --card-bg: rgb(51 65 85 / 55%);
+  --surface-bg: rgb(71 85 105 / 55%);
+  --input-bg: rgb(248 250 252 / 92%);
+  --primary-btn-start: #64748b;
+  --primary-btn-end: #475569;
+  --ghost-btn-bg: rgb(51 65 85 / 65%);
+  --hover-bg: rgb(148 163 184 / 30%);
+  --chip-bg: rgb(148 163 184 / 24%);
+}
+
+.theme-rain {
+  --overlay-top: rgb(30 58 138 / 44%);
+  --overlay-bottom: rgb(2 6 23 / 80%);
+  --text-color: #e6f4ff;
+  --muted-text: rgb(191 219 254 / 85%);
+  --card-bg: rgb(30 64 175 / 45%);
+  --surface-bg: rgb(30 58 138 / 55%);
+  --input-bg: rgb(241 245 249 / 90%);
+  --primary-btn-start: #0ea5e9;
+  --primary-btn-end: #1d4ed8;
+  --ghost-btn-bg: rgb(30 58 138 / 64%);
+  --hover-bg: rgb(96 165 250 / 32%);
+  --chip-bg: rgb(125 211 252 / 22%);
+}
+
+.theme-snow {
+  --overlay-top: rgb(226 232 240 / 38%);
+  --overlay-bottom: rgb(100 116 139 / 60%);
+  --text-color: #0f172a;
+  --muted-text: rgb(30 41 59 / 78%);
+  --card-bg: rgb(248 250 252 / 70%);
+  --surface-bg: rgb(226 232 240 / 70%);
+  --input-bg: rgb(255 255 255 / 98%);
+  --border-color: rgb(51 65 85 / 15%);
+  --primary-btn-start: #38bdf8;
+  --primary-btn-end: #64748b;
+  --primary-btn-text: #0f172a;
+  --ghost-btn-bg: rgb(226 232 240 / 78%);
+  --hover-bg: rgb(148 163 184 / 22%);
+  --shadow-color: rgb(15 23 42 / 15%);
+  --chip-bg: rgb(203 213 225 / 45%);
+  --danger-bg: rgb(239 68 68 / 22%);
+  --error-text: #b91c1c;
+}
+
+.theme-storm {
+  --overlay-top: rgb(30 27 75 / 52%);
+  --overlay-bottom: rgb(2 6 23 / 84%);
+  --text-color: #ede9fe;
+  --muted-text: rgb(221 214 254 / 84%);
+  --card-bg: rgb(49 46 129 / 52%);
+  --surface-bg: rgb(67 56 202 / 42%);
+  --input-bg: rgb(237 233 254 / 92%);
+  --primary-btn-start: #8b5cf6;
+  --primary-btn-end: #4f46e5;
+  --ghost-btn-bg: rgb(49 46 129 / 62%);
+  --hover-bg: rgb(139 92 246 / 35%);
+  --chip-bg: rgb(167 139 250 / 23%);
+}
