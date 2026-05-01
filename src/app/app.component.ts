@@ -28,6 +28,9 @@ import { PollutionCardComponent } from './components/pollution-card/pollution-ca
 import { I18nService, LanguageCode } from './services/i18n.service';
 import { TranslatePipe } from './pipes/translate.pipe';
 
+/** Local full-screen background: looping video or animated GIF. */
+type BackgroundLayer = { type: 'video' | 'gif'; src: string };
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -68,7 +71,9 @@ export class AppComponent {
   weather: WeatherResult | null = null;
   savedLocations: LocationOption[] = [];
   savedLocationWeather: WeatherResult[] = [];
-  bgImageUrl = this.getBackgroundUrl('clear', 'Bengaluru');
+  /** Local looping video or GIF; falls back to Unsplash when no asset applies. */
+  bgLayer: BackgroundLayer | null = { type: 'video', src: 'assets/videos/sunny.mp4' };
+  bgImageUrl = '';
   themeClass = 'theme-clear';
   languageNames: Record<LanguageCode, string> = {
     en: 'English',
@@ -107,9 +112,7 @@ export class AppComponent {
       .pipe(
         tap((result) => {
           this.weather = result;
-          const weatherTheme = this.weatherLabel(result.current.weatherCode);
-          this.themeClass = `theme-${weatherTheme}`;
-          this.bgImageUrl = this.getBackgroundUrl(weatherTheme, result.locationName);
+          this.applyWeatherTheme(result.current.weatherCode, result.locationName);
           this.searchControl.setValue(city.trim(), { emitEvent: false });
           this.cityControl.setValue('', { emitEvent: false });
         }),
@@ -209,9 +212,7 @@ export class AppComponent {
       .pipe(
         tap((result) => {
           this.weather = result;
-          const weatherTheme = this.weatherLabel(result.current.weatherCode);
-          this.themeClass = `theme-${weatherTheme}`;
-          this.bgImageUrl = this.getBackgroundUrl(weatherTheme, result.locationName);
+          this.applyWeatherTheme(result.current.weatherCode, result.locationName);
           this.searchControl.setValue(location.name, { emitEvent: false });
           this.cityControl.setValue('', { emitEvent: false });
           this.locationSuggestions = [];
@@ -288,6 +289,49 @@ export class AppComponent {
     } catch {
       this.savedLocations = [];
     }
+  }
+
+  private applyWeatherTheme(weatherCode: number, locationName: string): void {
+    const weatherTheme = this.weatherLabel(weatherCode);
+    this.themeClass = `theme-${weatherTheme}`;
+    const layer = this.localBackgroundForCode(weatherCode);
+    if (layer) {
+      this.bgLayer = layer;
+      this.bgImageUrl = '';
+      return;
+    }
+    this.bgLayer = null;
+    this.bgImageUrl = this.getBackgroundUrl(weatherTheme, locationName);
+  }
+
+  /**
+   * WMO weather codes (Open-Meteo). Assets under `assets/videos/`.
+   * 0 clear → sunny; 1 mainly clear → rainbow; 2–3 cloudy → GIF;
+   * 4–67 precipitation / drizzle / rain → rainy; 68–77 snow → snowy; 78+ thunder/hail → thunderstorm GIF.
+   */
+  private localBackgroundForCode(code: number): BackgroundLayer | null {
+    if (!Number.isFinite(code)) {
+      return null;
+    }
+    if (code === 0) {
+      return { type: 'video', src: 'assets/videos/sunny.mp4' };
+    }
+    if (code === 1) {
+      return { type: 'video', src: 'assets/videos/rainbow.mp4' };
+    }
+    if (code >= 2 && code <= 3) {
+      return { type: 'gif', src: 'assets/videos/cloudy.gif' };
+    }
+    if (code >= 4 && code <= 67) {
+      return { type: 'video', src: 'assets/videos/rainy.mp4' };
+    }
+    if (code >= 68 && code <= 77) {
+      return { type: 'video', src: 'assets/videos/snowy.mp4' };
+    }
+    if (code >= 78) {
+      return { type: 'gif', src: 'assets/videos/thunderstorm.gif' };
+    }
+    return null;
   }
 
   private getBackgroundUrl(condition: string, locationName: string): string {

@@ -1,4 +1,24 @@
-<main class="app-shell" [class]="themeClass" [style.background-image]="'url(' + bgImageUrl + ')'">
+<main
+  class="app-shell"
+  [class]="themeClass"
+  [class.app-shell--video-bg]="bgLayer"
+  [style.background-image]="bgLayer ? 'none' : 'url(' + bgImageUrl + ')'"
+>
+  @if (bgLayer) {
+    @if (bgLayer.type === 'video') {
+      <video
+        class="bg-media"
+        [src]="bgLayer.src"
+        autoplay
+        muted
+        loop
+        playsinline
+        aria-hidden="true"
+      ></video>
+    } @else {
+      <img class="bg-media" [src]="bgLayer.src" alt="" />
+    }
+  }
   <div class="overlay"></div>
 
   <section class="content" @fadeUp>

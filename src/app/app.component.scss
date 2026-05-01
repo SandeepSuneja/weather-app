@@ -15,6 +15,7 @@
   background-size: cover;
   background-position: center;
   transition: background-image 700ms ease;
+  overflow: hidden;
   --overlay-top: rgb(2 6 23 / 38%);
   --overlay-bottom: rgb(2 6 23 / 78%);
   --text-color: #f4f8ff;
@@ -32,18 +33,33 @@
   --chip-bg: rgb(148 163 184 / 18%);
   --danger-bg: rgb(239 68 68 / 30%);
   --error-text: #fecaca;
+
+  &--video-bg {
+    background-image: none !important;
+  }
+}
+
+.bg-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(180deg, var(--overlay-top), var(--overlay-bottom));
   backdrop-filter: blur(2px);
 }
 
 .content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 90vw;
   min-height: 90vh;
   max-width: 1500px;
