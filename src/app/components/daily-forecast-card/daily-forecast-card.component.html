@@ -1,8 +1,50 @@
 <article class="daily card">
   <h3>{{ 'daily.title' | t }}</h3>
-  <div class="day" *ngFor="let day of dailyData">
-    <p>{{ day.date | date : 'EEE, MMM d' }}</p>
-    <p>{{ weatherIcon(day.weatherCode) }}</p>
-    <p>{{ day.minTemp | number : '1.0-0' }}° / {{ day.maxTemp | number : '1.0-0' }}°</p>
+
+  <div class="daily-list">
+    <article class="day-card" *ngFor="let day of dailyData">
+      <div class="day-card__primary">
+        <div class="day-card__when">
+          <span class="day-card__week">{{ day.date | date : 'EEE' }}</span>
+          <span class="day-card__date">{{ day.date | date : 'MMM d' }}</span>
+        </div>
+        <div class="day-card__wx" aria-hidden="true">
+          <span class="day-card__icon">{{ weatherIcon(day.weatherCode) }}</span>
+          <span class="day-card__cond">{{ weatherLabel(day.weatherCode) | t }}</span>
+        </div>
+        <div class="day-card__temps">
+          <span class="day-card__hi">{{ day.maxTemp | number : '1.0-0' }}°</span>
+          <span class="day-card__lo">{{ day.minTemp | number : '1.0-0' }}°</span>
+        </div>
+      </div>
+
+      <div class="day-card__track" [attr.aria-label]="'daily.rangeAria' | t">
+        <span class="day-card__band" [ngStyle]="bandStyle(day)"></span>
+      </div>
+
+      <dl class="day-card__meta">
+        <div class="day-card__meta-item" *ngIf="day.precipProbabilityMax != null">
+          <dt>{{ 'daily.precip' | t }}</dt>
+          <dd>{{ day.precipProbabilityMax }}%</dd>
+        </div>
+        <div class="day-card__meta-item" *ngIf="day.uvIndexMax != null">
+          <dt>{{ 'daily.uv' | t }}</dt>
+          <dd>{{ day.uvIndexMax | number : '1.0-1' }}</dd>
+        </div>
+        <div class="day-card__meta-item" *ngIf="day.windSpeedMax != null">
+          <dt>{{ 'daily.wind' | t }}</dt>
+          <dd>{{ day.windSpeedMax | number : '1.0-0' }} <span class="day-card__unit">km/h</span></dd>
+        </div>
+      </dl>
+      <div class="day-card__sun-row" *ngIf="day.sunrise || day.sunset">
+        <span *ngIf="day.sunrise" class="day-card__sun"
+          >{{ 'daily.sunrise' | t }} {{ day.sunrise | date : 'shortTime' }}</span
+        >
+        <span *ngIf="day.sunrise && day.sunset" class="day-card__sun-sep">·</span>
+        <span *ngIf="day.sunset" class="day-card__sun"
+          >{{ 'daily.sunset' | t }} {{ day.sunset | date : 'shortTime' }}</span
+        >
+      </div>
+    </article>
   </div>
 </article>

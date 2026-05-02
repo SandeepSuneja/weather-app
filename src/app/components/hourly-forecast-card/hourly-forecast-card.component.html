@@ -3,11 +3,117 @@
     <h3>{{ 'hourly.title' | t }}</h3>
     <p>{{ 'hourly.trend' | t }}</p>
   </div>
-  <div class="timeline">
-    <div class="hour" *ngFor="let hour of hourlyData">
-      <p class="hour-time">{{ hour.time | date : 'shortTime' }}</p>
-      <div class="hour-icon">{{ weatherIcon(hour.weatherCode) }}</div>
-      <strong class="hour-temp">{{ hour.temperature | number : '1.0-0' }}°</strong>
+
+  <ng-container *ngIf="chartModel() as chart; else emptyHourly">
+    <div class="analytics" role="group" [attr.aria-label]="'hourly.analyticsAria' | t">
+      <div class="stat">
+        <span class="stat-label">{{ 'hourly.high' | t }}</span>
+        <strong class="stat-value">{{ chart.maxObserved | number : '1.0-1' }}°</strong>
+      </div>
+      <div class="stat">
+        <span class="stat-label">{{ 'hourly.avg' | t }}</span>
+        <strong class="stat-value">{{ chart.meanTemp | number : '1.0-1' }}°</strong>
+      </div>
+      <div class="stat">
+        <span class="stat-label">{{ 'hourly.low' | t }}</span>
+        <strong class="stat-value">{{ chart.minObserved | number : '1.0-1' }}°</strong>
+      </div>
+      <div class="stat" *ngIf="chart.avgHumidity !== null">
+        <span class="stat-label">{{ 'hourly.avgHumidity' | t }}</span>
+        <strong class="stat-value">{{ chart.avgHumidity | number : '1.0-0' }}%</strong>
+      </div>
     </div>
-  </div>
+
+    <div class="chart-wrap">
+      <svg
+        class="hourly-chart"
+        [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        [attr.aria-label]="'hourly.chartAria' | t"
+      >
+        <defs>
+          <linearGradient [attr.id]="gradientId" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" class="chart-gradient-stop chart-gradient-stop--top" />
+            <stop offset="100%" class="chart-gradient-stop chart-gradient-stop--bottom" />
+          </linearGradient>
+        </defs>
+
+        <g class="grid" aria-hidden="true">
+          <line
+            *ngFor="let tick of chart.yTicks"
+            class="grid-line"
+            x1="0"
+            [attr.y1]="tick.y"
+            [attr.x2]="chart.width"
+            [attr.y2]="tick.y"
+          />
+          <line
+            *ngFor="let xt of chart.xTicks"
+            class="grid-line grid-line--x"
+            [attr.x1]="xt.x"
+            [attr.y1]="12"
+            [attr.x2]="xt.x"
+            [attr.y2]="chart.height - chart.padBottom"
+          />
+          <text
+            *ngFor="let tick of chart.yTicks"
+            class="axis-label axis-label--y"
+            x="4"
+            [attr.y]="tick.y"
+            dominant-baseline="middle"
+          >
+            {{ tick.label }}°
+          </text>
+        </g>
+
+        <path class="area" [attr.d]="chart.areaPath" [attr.fill]="'url(#' + gradientId + ')'" />
+        <polyline class="line" [attr.points]="chart.linePoints" fill="none" />
+
+        <g *ngFor="let p of chart.points; let i = index" class="point-group">
+          <title>
+            {{ hourlyData[i].time | date : 'shortTime' }} — {{ p.temp | number : '1.0-1' }}° ({{
+              weatherIcon(hourlyData[i].weatherCode)
+            }}) · {{ hourlyData[i].precipitationProbability ?? 0 }}% precip{{
+              hourlyData[i].relativeHumidity != null
+                ? ' · RH ' + hourlyData[i].relativeHumidity + '%'
+                : ''
+            }}
+          </title>
+          <circle class="point-hit" [attr.cx]="p.x" [attr.cy]="p.y" r="14" />
+          <circle class="point" [attr.cx]="p.x" [attr.cy]="p.y" r="4.5" />
+        </g>
+
+        <g class="x-labels" aria-hidden="true">
+          <text
+            *ngFor="let xt of chart.xTicks"
+            class="axis-label axis-label--x"
+            [attr.x]="xt.x"
+            [attr.y]="chart.height - 14"
+            text-anchor="middle"
+          >
+            {{ hourlyData[xt.hourIndex].time | date : 'HH:mm' }}
+          </text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="precip-legend" *ngIf="hourlyData.length">
+      <span class="precip-legend__label">{{ 'hourly.precipLegend' | t }}</span>
+      <div class="precip-strip" role="img" [attr.aria-label]="'hourly.precipAria' | t">
+        <div
+          *ngFor="let h of hourlyData"
+          class="precip-strip__cell"
+          [title]="(h.time | date : 'shortTime') + ' — ' + (h.precipitationProbability ?? 0) + '%'"
+        >
+          <span class="precip-strip__bar" [style.height.px]="precipBarPx(h)"></span>
+          <span class="precip-strip__pct">{{ h.precipitationProbability ?? 0 }}%</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #emptyHourly>
+    <p class="empty">{{ 'hourly.empty' | t }}</p>
+  </ng-template>
 </article>

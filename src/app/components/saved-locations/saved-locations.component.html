@@ -1,5 +1,5 @@
 <section class="saved-section card">
-  <h3>{{ 'saved.title' | t }}</h3>
+  <h3 *ngIf="showHeading">{{ 'saved.title' | t }}</h3>
   <p *ngIf="savedLoading">{{ 'saved.refreshing' | t }}</p>
   <div class="saved-grid" *ngIf="!savedLoading">
     <article

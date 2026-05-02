@@ -1,11 +1,116 @@
 <article class="current card">
-  <h2>{{ weatherData.locationName }}</h2>
-  <p class="condition">
-    <span>{{ weatherIcon(weatherData.current.weatherCode) }}</span>
-    <span class="label">{{ weatherLabel(weatherData.current.weatherCode) | t }}</span>
-  </p>
-  <div class="temp">{{ weatherData.current.temperature | number : '1.0-0' }}°C</div>
-  <p>{{ 'current.feelsLike' | t }} {{ weatherData.current.feelsLike | number : '1.0-0' }}°C</p>
-  <p>{{ 'current.humidity' | t }} {{ weatherData.current.humidity }}%</p>
-  <p>{{ 'current.wind' | t }} {{ weatherData.current.windSpeed }} km/h</p>
+  <div class="current__head">
+    <div class="current__meta">
+      <h2 class="current__place">{{ weatherData.locationName }}</h2>
+      <p class="condition">
+        <span class="current__icon" aria-hidden="true">{{ weatherIcon(weatherData.current.weatherCode) }}</span>
+        <span class="label">{{ weatherLabel(weatherData.current.weatherCode) | t }}</span>
+      </p>
+      <time class="current__as-of" [attr.datetime]="weatherData.current.time">
+        {{ 'current.asOf' | t }} {{ weatherData.current.time | date : 'EEE, MMM d · HH:mm' }}
+      </time>
+    </div>
+    <div class="temp">{{ weatherData.current.temperature | number : '1.0-0' }}°</div>
+  </div>
+
+  <ul class="current__stats current__stats--grid">
+    <li>
+      <span class="current__stat-label">{{ 'current.feelsLike' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.feelsLike | number : '1.0-0' }}°</span>
+    </li>
+    <li>
+      <span class="current__stat-label">{{ 'current.humidity' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.humidity }}%</span>
+    </li>
+    <li>
+      <span class="current__stat-label">{{ 'current.wind' | t }}</span>
+      <span class="current__stat-value">
+        {{ weatherData.current.windSpeed | number : '1.0-0' }} km/h
+        @if (weatherData.current.windDirectionDegrees != null) {
+          <span class="current__stat-sub">{{ windCompass(weatherData.current.windDirectionDegrees) }}</span>
+        }
+      </span>
+    </li>
+    <li *ngIf="weatherData.current.pressureMsl != null">
+      <span class="current__stat-label">{{ 'current.pressure' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.pressureMsl | number : '1.0-0' }} hPa</span>
+    </li>
+    <li *ngIf="weatherData.current.cloudCoverPercent != null">
+      <span class="current__stat-label">{{ 'current.cloudCover' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.cloudCoverPercent | number : '1.0-0' }}%</span>
+    </li>
+    <li *ngIf="weatherData.current.dewPoint != null">
+      <span class="current__stat-label">{{ 'current.dewPoint' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.dewPoint | number : '1.0-1' }}°</span>
+    </li>
+    <li *ngIf="weatherData.current.precipitationMm != null">
+      <span class="current__stat-label">{{ 'current.precipitation' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.precipitationMm | number : '1.0-1' }} mm</span>
+    </li>
+    <li *ngIf="weatherData.current.uvIndex != null">
+      <span class="current__stat-label">{{ 'current.uvIndex' | t }}</span>
+      <span class="current__stat-value">{{ weatherData.current.uvIndex | number : '1.0-1' }}</span>
+    </li>
+  </ul>
+
+  <section class="current__air" aria-labelledby="current-air-heading">
+    <div class="current__air-head">
+      <h3 id="current-air-heading" class="current__air-title">{{ 'pollution.title' | t }}</h3>
+      <span class="aqi-pill" [class]="aqiClass(weatherData.pollution.usAqi)">
+        AQI {{ weatherData.pollution.usAqi ?? 'N/A' }} — {{ aqiStatus(weatherData.pollution.usAqi) | t }}
+      </span>
+    </div>
+    <div class="current__air-grid">
+      <div class="air-metric">
+        <div class="air-metric__top">
+          <span>PM2.5</span>
+          <strong>{{ weatherData.pollution.pm2_5 ?? 'N/A' }}</strong>
+        </div>
+        <div class="air-metric__bar">
+          <span [style.width.%]="metricPercent(weatherData.pollution.pm2_5, 120)"></span>
+        </div>
+        <small>µg/m³</small>
+      </div>
+      <div class="air-metric">
+        <div class="air-metric__top">
+          <span>PM10</span>
+          <strong>{{ weatherData.pollution.pm10 ?? 'N/A' }}</strong>
+        </div>
+        <div class="air-metric__bar">
+          <span [style.width.%]="metricPercent(weatherData.pollution.pm10, 180)"></span>
+        </div>
+        <small>µg/m³</small>
+      </div>
+      <div class="air-metric">
+        <div class="air-metric__top">
+          <span>NO₂</span>
+          <strong>{{ weatherData.pollution.nitrogenDioxide ?? 'N/A' }}</strong>
+        </div>
+        <div class="air-metric__bar">
+          <span [style.width.%]="metricPercent(weatherData.pollution.nitrogenDioxide, 200)"></span>
+        </div>
+        <small>µg/m³</small>
+      </div>
+      <div class="air-metric">
+        <div class="air-metric__top">
+          <span>O₃</span>
+          <strong>{{ weatherData.pollution.ozone ?? 'N/A' }}</strong>
+        </div>
+        <div class="air-metric__bar">
+          <span [style.width.%]="metricPercent(weatherData.pollution.ozone, 240)"></span>
+        </div>
+        <small>µg/m³</small>
+      </div>
+      <div class="air-metric">
+        <div class="air-metric__top">
+          <span>CO</span>
+          <strong>{{ weatherData.pollution.carbonMonoxide ?? 'N/A' }}</strong>
+        </div>
+        <div class="air-metric__bar">
+          <span [style.width.%]="metricPercent(weatherData.pollution.carbonMonoxide, 2000)"></span>
+        </div>
+        <small>µg/m³</small>
+      </div>
+    </div>
+  </section>
 </article>
