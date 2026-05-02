@@ -27,48 +27,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
       - name: Build app
         run: npm run build -- --configuration production
 
-  deploy:
-    name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: ci
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build app for Pages
-        run: npm run build -- --configuration production --base-href "/${{ github.event.repository.name }}/"
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist/interactive-weather-app/browser
-
-      - name: Deploy Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Unit tests
+        run: npm test
 
   # Optional: set repository variable AWS_S3_BUCKET and secrets AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
   # For CloudFront cache busts, set repository variable AWS_CLOUDFRONT_DISTRIBUTION_ID.

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { LocationOption, WeatherResult } from '../../weather.models';
+import { LocationOption, locationsMatch, WeatherResult } from '../../weather.models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
@@ -11,6 +11,8 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   styleUrls: ['./saved-locations.component.scss'],
 })
 export class SavedLocationsComponent {
+  /** When false, omit the section heading (e.g. parent supplies panel title). */
+  @Input() showHeading = true;
   @Input() savedLoading = false;
   @Input() savedLocationWeather: WeatherResult[] = [];
   @Input() selectedLocation: LocationOption | null = null;
@@ -38,11 +40,6 @@ export class SavedLocationsComponent {
       return false;
     }
 
-    return (
-      location.name === this.selectedLocation.name &&
-      location.country === this.selectedLocation.country &&
-      location.latitude === this.selectedLocation.latitude &&
-      location.longitude === this.selectedLocation.longitude
-    );
+    return locationsMatch(location, this.selectedLocation);
   }
 }

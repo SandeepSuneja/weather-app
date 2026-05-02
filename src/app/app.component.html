@@ -24,18 +24,45 @@
   <section class="content" @fadeUp>
     <header class="hero">
       <div class="hero-top">
-        <div>
-          <h1>{{ 'app.title' | t }}</h1>
-          <p>{{ 'app.subtitle' | t }}</p>
+        <div class="hero-brand">
+          <img
+            class="hero-brand__logo"
+            src="assets/images/logo.png"
+            width="52"
+            height="52"
+            alt=""
+            aria-labelledby="app-heading"
+            decoding="async"
+          />
+          <div class="hero-brand__text">
+            <h1 id="app-heading">{{ 'app.title' | t }}</h1>
+          </div>
         </div>
-        <label class="language-switcher">
-          <span class="language-label">{{ 'app.language' | t }}</span>
-          <select [value]="i18n.language" (change)="changeLanguage($any($event.target).value)">
-            <option *ngFor="let lang of i18n.supportedLanguages" [value]="lang">
-              {{ languageNames[lang] }}
-            </option>
-          </select>
-        </label>
+        <div class="hero-actions">
+          @if (savedLocations.length || savedLoading) {
+            <button
+              type="button"
+              class="saved-menu-btn"
+              [class.saved-menu-btn--open]="savedPanelOpen"
+              (click)="toggleSavedPanel()"
+              [attr.aria-expanded]="savedPanelOpen"
+              aria-controls="saved-locations-panel"
+            >
+              <span class="saved-menu-btn__label">{{ 'saved.openMenu' | t }}</span>
+              @if (savedLocations.length) {
+                <span class="saved-menu-btn__count" aria-hidden="true">{{ savedLocations.length }}</span>
+              }
+            </button>
+          }
+          <label class="language-switcher">
+            <span class="language-label">{{ 'app.language' | t }}</span>
+            <select [value]="i18n.language" (change)="changeLanguage($any($event.target).value)">
+              <option *ngFor="let lang of i18n.supportedLanguages" [value]="lang">
+                {{ languageNames[lang] }}
+              </option>
+            </select>
+          </label>
+        </div>
       </div>
     </header>
 
@@ -53,8 +80,47 @@
     <p class="error" *ngIf="error">{{ error }}</p>
 
     <section class="layout">
-      <aside class="left-panel" *ngIf="savedLocations.length || savedLoading" @fadeUp>
+      <section class="dashboard-wrap" *ngIf="weather as data" @fadeUp>
+        <section class="dashboard">
+          <div class="dashboard__row dashboard__row--top">
+            <app-current-weather-card [weatherData]="data" />
+            <app-hourly-forecast-card [hourlyData]="data.hourly" />
+          </div>
+          <div class="dashboard__row dashboard__row--daily">
+            <app-daily-forecast-card [dailyData]="data.daily" />
+          </div>
+        </section>
+      </section>
+    </section>
+
+    @if (savedPanelOpen) {
+      <div
+        class="saved-panel-backdrop"
+        role="presentation"
+        tabindex="-1"
+        (click)="closeSavedPanel()"
+      ></div>
+      <aside
+        id="saved-locations-panel"
+        class="saved-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="saved-panel-heading"
+        @fadeUp
+      >
+        <div class="saved-panel__header">
+          <h2 id="saved-panel-heading" class="saved-panel__title">{{ 'saved.title' | t }}</h2>
+          <button
+            type="button"
+            class="saved-panel__close"
+            (click)="closeSavedPanel()"
+            [attr.aria-label]="'saved.closeMenu' | t"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
         <app-saved-locations
+          [showHeading]="false"
           [savedLoading]="savedLoading"
           [savedLocationWeather]="savedLocationWeather"
           [selectedLocation]="weather?.location ?? null"
@@ -62,15 +128,6 @@
           (removeLocation)="removeLocation($event)"
         />
       </aside>
-
-      <section class="dashboard-wrap" *ngIf="weather as data" @fadeUp>
-        <section class="dashboard">
-          <app-current-weather-card [weatherData]="data" />
-          <app-pollution-card [pollution]="data.pollution" />
-          <app-hourly-forecast-card [hourlyData]="data.hourly" />
-          <app-daily-forecast-card [dailyData]="data.daily" />
-        </section>
-      </section>
-    </section>
+    }
   </section>
 </main>

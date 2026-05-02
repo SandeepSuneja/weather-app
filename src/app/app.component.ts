@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   animate,
@@ -18,13 +18,12 @@ import {
   tap,
 } from 'rxjs';
 import { WeatherService } from './services/weather.service';
-import { LocationOption, WeatherResult } from './weather.models';
+import { LocationOption, locationsMatch, WeatherResult } from './weather.models';
 import { LocationSearchComponent } from './components/location-search/location-search.component';
 import { SavedLocationsComponent } from './components/saved-locations/saved-locations.component';
 import { CurrentWeatherCardComponent } from './components/current-weather-card/current-weather-card.component';
 import { HourlyForecastCardComponent } from './components/hourly-forecast-card/hourly-forecast-card.component';
 import { DailyForecastCardComponent } from './components/daily-forecast-card/daily-forecast-card.component';
-import { PollutionCardComponent } from './components/pollution-card/pollution-card.component';
 import { I18nService, LanguageCode } from './services/i18n.service';
 import { TranslatePipe } from './pipes/translate.pipe';
 
@@ -41,7 +40,6 @@ type BackgroundLayer = { type: 'video' | 'gif'; src: string };
     CurrentWeatherCardComponent,
     HourlyForecastCardComponent,
     DailyForecastCardComponent,
-    PollutionCardComponent,
     TranslatePipe,
   ],
   templateUrl: './app.component.html',
@@ -58,7 +56,8 @@ type BackgroundLayer = { type: 'video' | 'gif'; src: string };
     ]),
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
+  savedPanelOpen = false;
   private static readonly STORAGE_KEY = 'saved-weather-locations-v1';
 
   readonly searchControl = new FormControl('Bengaluru', { nonNullable: true });
@@ -77,13 +76,8 @@ export class AppComponent {
   themeClass = 'theme-clear';
   languageNames: Record<LanguageCode, string> = {
     en: 'English',
-    es: 'Español',
-    fr: 'Français',
-    de: 'Deutsch',
-    pt: 'Português',
     hi: 'हिन्दी',
-    zh: '中文',
-    ar: 'العربية',
+    ja: '日本語',
   };
 
   constructor(
@@ -96,8 +90,41 @@ export class AppComponent {
     this.loadSavedLocationWeather();
   }
 
+  ngOnDestroy(): void {
+    document.body.classList.remove('app--saved-panel-open');
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.savedPanelOpen) {
+      this.closeSavedPanel();
+    }
+  }
+
   changeLanguage(language: string): void {
     this.i18n.setLanguage(language as LanguageCode);
+    if (this.weather) {
+      this.weatherService.localizeWeatherLabels(this.weather).subscribe((w) => {
+        this.weather = w;
+        this.searchControl.setValue(w.location.name, { emitEvent: false });
+        this.applyWeatherTheme(w.current.weatherCode, w.locationName);
+      });
+    }
+    this.loadSavedLocationWeather();
+  }
+
+  toggleSavedPanel(): void {
+    this.savedPanelOpen = !this.savedPanelOpen;
+    this.syncSavedPanelScrollLock();
+  }
+
+  closeSavedPanel(): void {
+    this.savedPanelOpen = false;
+    this.syncSavedPanelScrollLock();
+  }
+
+  private syncSavedPanelScrollLock(): void {
+    document.body.classList.toggle('app--saved-panel-open', this.savedPanelOpen);
   }
 
   fetchForCity(city: string): void {
@@ -113,7 +140,7 @@ export class AppComponent {
         tap((result) => {
           this.weather = result;
           this.applyWeatherTheme(result.current.weatherCode, result.locationName);
-          this.searchControl.setValue(city.trim(), { emitEvent: false });
+          this.searchControl.setValue(result.location.name, { emitEvent: false });
           this.cityControl.setValue('', { emitEvent: false });
         }),
         catchError(() => {
@@ -148,22 +175,18 @@ export class AppComponent {
   }
 
   removeLocation(location: LocationOption): void {
-    this.savedLocations = this.savedLocations.filter(
-      (item) =>
-        !(
-          item.name === location.name &&
-          item.country === location.country &&
-          item.latitude === location.latitude &&
-          item.longitude === location.longitude
-        )
-    );
+    this.savedLocations = this.savedLocations.filter((item) => !locationsMatch(item, location));
     this.savedLocationWeather = this.savedLocationWeather.filter(
-      (item) => !this.isSameLocation(item.location, location)
+      (item) => !locationsMatch(item.location, location)
     );
     this.persistSavedLocations();
+    if (!this.savedLocations.length) {
+      this.closeSavedPanel();
+    }
   }
 
   openSavedLocation(location: LocationOption): void {
+    this.closeSavedPanel();
     this.fetchForLocation(location);
   }
 
@@ -213,7 +236,7 @@ export class AppComponent {
         tap((result) => {
           this.weather = result;
           this.applyWeatherTheme(result.current.weatherCode, result.locationName);
-          this.searchControl.setValue(location.name, { emitEvent: false });
+          this.searchControl.setValue(result.location.name, { emitEvent: false });
           this.cityControl.setValue('', { emitEvent: false });
           this.locationSuggestions = [];
         }),
@@ -257,12 +280,7 @@ export class AppComponent {
   }
 
   private isSameLocation(a: LocationOption, b: LocationOption): boolean {
-    return (
-      a.name === b.name &&
-      a.country === b.country &&
-      a.latitude === b.latitude &&
-      a.longitude === b.longitude
-    );
+    return locationsMatch(a, b);
   }
 
   private persistSavedLocations(): void {
