@@ -189,6 +189,20 @@ An optional **AWS S3** deploy job runs only when repository variables/secrets ar
 
 ---
 
+## Android app (Flutter)
+
+An **Android** port lives in **`mobile/`** (Flutter project `weatherly_mobile`). It uses the same Open-Meteo APIs and saved-locations storage key as the web app.
+
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
+
+See **`mobile/README.md`** for prerequisites, build commands, and feature parity notes.
+
+---
+
 ## Troubleshooting
 
 | Issue | What to try |
