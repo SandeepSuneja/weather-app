@@ -20,9 +20,9 @@ class CitiesScreen extends StatefulWidget {
     required this.onSelectSaved,
     required this.onRemoveSaved,
     required this.onReorderSaved,
-    required this.onExploreMap,
     required this.onSearchSubmit,
     required this.searchFocusNode,
+    this.onUseCurrentLocation,
   });
 
   final TextEditingController searchController;
@@ -37,8 +37,8 @@ class CitiesScreen extends StatefulWidget {
   final ValueChanged<LocationOption> onSelectSaved;
   final ValueChanged<LocationOption> onRemoveSaved;
   final void Function(int oldIndex, int newIndex) onReorderSaved;
-  final VoidCallback onExploreMap;
   final ValueChanged<String> onSearchSubmit;
+  final VoidCallback? onUseCurrentLocation;
 
   @override
   State<CitiesScreen> createState() => _CitiesScreenState();
@@ -74,7 +74,10 @@ class _CitiesScreenState extends State<CitiesScreen> {
       child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _CitiesTopBar(title: AppStrings.appTitle),
+        _CitiesTopBar(
+          title: AppStrings.appTitle,
+          onUseCurrentLocation: widget.onUseCurrentLocation,
+        ),
         Expanded(
           child: Container(
             decoration: BoxDecoration(gradient: p.citiesPageBackground),
@@ -178,11 +181,6 @@ class _CitiesScreenState extends State<CitiesScreen> {
                       ),
                     ),
                   ),
-                SizedBox(height: lay.sectionGap),
-                _MapPreviewSection(
-                  label: AppStrings.citiesExploreMap,
-                  onExplore: widget.onExploreMap,
-                ),
               ],
             ),
           ),
@@ -194,9 +192,13 @@ class _CitiesScreenState extends State<CitiesScreen> {
 }
 
 class _CitiesTopBar extends StatelessWidget {
-  const _CitiesTopBar({required this.title});
+  const _CitiesTopBar({
+    required this.title,
+    required this.onUseCurrentLocation,
+  });
 
   final String title;
+  final VoidCallback? onUseCurrentLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +222,12 @@ class _CitiesTopBar extends StatelessWidget {
         children: [
           WeatherlyLogo(size: lay.logoSize),
           SizedBox(width: lay.gapS),
-          Text(title, style: lay.textCitiesBrand),
+          Expanded(child: Text(title, style: lay.textCitiesBrand)),
+          IconButton(
+            onPressed: onUseCurrentLocation,
+            tooltip: AppStrings.useCurrentLocation,
+            icon: Icon(Icons.my_location_outlined, color: p.accent),
+          ),
         ],
       ),
     );
@@ -402,78 +409,6 @@ class _SavedCityCard extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: lay.gapS, top: selected ? lay.gapXs : 0),
       child: card,
-    );
-  }
-}
-
-class _MapPreviewSection extends StatelessWidget {
-  const _MapPreviewSection({required this.label, required this.onExplore});
-
-  final String label;
-  final VoidCallback onExplore;
-
-  @override
-  Widget build(BuildContext context) {
-    final lay = context.weatherly;
-    final p = context.palette;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(lay.radiusS),
-      child: SizedBox(
-        height: lay.citiesMapHeight,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(
-              'assets/images/cities_map_preview.png',
-              fit: BoxFit.cover,
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    p.surface0.withValues(alpha: 0.85),
-                    p.surface0.withValues(alpha: 0),
-                    p.brandIndigo.withValues(alpha: 0.08),
-                  ],
-                  stops: const [0, 0.45, 1],
-                ),
-              ),
-            ),
-            Positioned(
-              left: lay.gapM,
-              bottom: lay.gapM,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onExplore,
-                  borderRadius: BorderRadius.circular(lay.radiusS),
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      gradient: p.accentGradient,
-                      borderRadius: BorderRadius.circular(lay.radiusS),
-                      boxShadow: p.glassShadow,
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: lay.gapM + 4, vertical: lay.gapS),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.map_outlined, color: p.onAccent, size: lay.font(14)),
-                        SizedBox(width: lay.gapS),
-                        Text(
-                          label.toUpperCase(),
-                          style: lay.sectionLabel(color: p.onAccent),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

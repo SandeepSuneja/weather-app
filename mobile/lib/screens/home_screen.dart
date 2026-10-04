@@ -33,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _citiesSearchFocus = FocusNode();
 
   bool _loading = false;
+  bool _loadingCurrentLocation = false;
   bool _savedLoading = false;
   String _error = '';
   WeatherResult? _weather;
@@ -81,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchForDeviceLocation({bool fallbackToSaved = false}) async {
     setState(() {
       _loading = true;
+      _loadingCurrentLocation = true;
       _error = '';
     });
     try {
@@ -130,7 +132,12 @@ class _HomeScreenState extends State<HomeScreen> {
         message: AppStrings.errorFetch,
       );
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _loadingCurrentLocation = false;
+        });
+      }
     }
   }
 
@@ -274,6 +281,20 @@ class _HomeScreenState extends State<HomeScreen> {
     _savedLocations = updated;
     await _savedRepo.save(_savedLocations);
     if (mounted) setState(() {});
+  }
+
+  Future<void> _goToCurrentLocation() async {
+    setState(() {
+      _loading = true;
+      _loadingCurrentLocation = true;
+      _error = '';
+      if (_nav == WeatherlyNavItem.cities) {
+        _nav = WeatherlyNavItem.dashboard;
+        _suggestions = [];
+        _cityController.clear();
+      }
+    });
+    await _fetchForDeviceLocation(fallbackToSaved: false);
   }
 
   Future<void> _openCityFromManager(LocationOption location) async {
@@ -445,8 +466,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onSelectSaved: _openCityFromManager,
               onRemoveSaved: _removeLocation,
               onReorderSaved: _reorderSavedLocations,
-              onExploreMap: () => _showSnack(AppStrings.citiesMapComingSoon),
               onSearchSubmit: _submitCitySearch,
+              onUseCurrentLocation: _goToCurrentLocation,
             )
           : Container(
               decoration: BoxDecoration(gradient: palette.pageBackground),
@@ -457,6 +478,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: WeatherlyTopBar(
                       title: AppStrings.appTitle,
                       onSettings: _showSettingsSheet,
+                      onUseCurrentLocation: _goToCurrentLocation,
+                      locationBusy: _loadingCurrentLocation,
+                      useCurrentLocationTooltip: AppStrings.useCurrentLocation,
                       onSaveLocation: weather != null ? _addCurrentLocation : null,
                       locationSaved: _currentSaved,
                       saveTooltip:
@@ -479,7 +503,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             physics: const AlwaysScrollableScrollPhysics(),
                             children: [
-                              HeroWeatherSection(data: weather, loading: _loading),
+                              HeroWeatherSection(
+                                data: weather,
+                                loading: _loading,
+                                loadingMessage: _loadingCurrentLocation
+                                    ? AppStrings.fetchingCurrentLocation
+                                    : AppStrings.searchLoading,
+                              ),
                               if (_error.isNotEmpty) ...[
                                 SizedBox(height: lay.gapM),
                                 Text(_error, style: const TextStyle(color: Colors.red)),

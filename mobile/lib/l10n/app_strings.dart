@@ -35,6 +35,8 @@ abstract final class AppStrings {
   static const errorLocationDisabled = 'Location services are disabled on this device.';
   static const settingsTitle = 'Settings';
   static const settingsUseDeviceLocation = 'Use my current location';
+  static const useCurrentLocation = 'Current location';
+  static const fetchingCurrentLocation = 'Getting your location…';
   static const settingsAppearance = 'Appearance';
   static const settingsThemeLight = 'Light';
   static const settingsThemeDark = 'Dark';
@@ -45,8 +47,6 @@ abstract final class AppStrings {
   static const citiesSavedLocations = 'Saved locations';
   static const citiesEditList = 'Edit list';
   static const citiesDoneEditing = 'Done';
-  static const citiesExploreMap = 'Explore map';
-  static const citiesMapComingSoon = 'Map view coming soon';
   static const citiesAddCity = 'Add city';
 
   static const gpsPlaceholderNames = {locationCurrent};

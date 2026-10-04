@@ -17,16 +17,22 @@ class WeatherlyTopBar extends StatelessWidget {
     super.key,
     required this.title,
     required this.onSettings,
+    this.onUseCurrentLocation,
     this.onSaveLocation,
     this.locationSaved = false,
+    this.useCurrentLocationTooltip,
+    this.locationBusy = false,
     this.saveTooltip,
     this.settingsTooltip,
   });
 
   final String title;
   final VoidCallback onSettings;
+  final VoidCallback? onUseCurrentLocation;
+  final bool locationBusy;
   final VoidCallback? onSaveLocation;
   final bool locationSaved;
+  final String? useCurrentLocationTooltip;
   final String? saveTooltip;
   final String? settingsTooltip;
 
@@ -46,6 +52,18 @@ class WeatherlyTopBar extends StatelessWidget {
           WeatherlyLogo(size: lay.logoSize),
           SizedBox(width: lay.gapS),
           Expanded(child: Text(title, style: lay.textAppTitle)),
+          if (onUseCurrentLocation != null)
+            IconButton(
+              onPressed: locationBusy ? null : onUseCurrentLocation,
+              tooltip: useCurrentLocationTooltip,
+              icon: locationBusy
+                  ? SizedBox(
+                      width: lay.font(22),
+                      height: lay.font(22),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: p.accent),
+                    )
+                  : Icon(Icons.my_location_outlined, color: p.accent),
+            ),
           if (onSaveLocation != null)
             IconButton(
               onPressed: locationSaved ? null : onSaveLocation,
@@ -71,10 +89,12 @@ class HeroWeatherSection extends StatelessWidget {
     super.key,
     required this.data,
     required this.loading,
+    this.loadingMessage,
   });
 
   final WeatherResult? data;
   final bool loading;
+  final String? loadingMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -103,11 +123,53 @@ class HeroWeatherSection extends StatelessWidget {
             ),
             visual: visual,
           ),
-          if (loading && data == null)
-            const Center(child: CircularProgressIndicator())
-          else if (data != null)
-            _HeroContent(data: data!, visual: visual),
+          if (data != null && !loading) _HeroContent(data: data!, visual: visual),
+          if (loading)
+            _HeroLoadingOverlay(
+              message: loadingMessage ?? AppStrings.searchLoading,
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeroLoadingOverlay extends StatelessWidget {
+  const _HeroLoadingOverlay({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final lay = context.weatherly;
+    final p = context.palette;
+    return ColoredBox(
+      color: p.shadowBase.withValues(alpha: 0.42),
+      child: Center(
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: lay.pagePaddingH),
+          padding: EdgeInsets.symmetric(horizontal: lay.gapM * 1.5, vertical: lay.gapM),
+          decoration: weatherlyGlassDecoration(context: context, radius: lay.radiusM),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: lay.font(36),
+                height: lay.font(36),
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: p.accent,
+                ),
+              ),
+              SizedBox(height: lay.gapM),
+              Text(
+                message,
+                style: lay.textHeroMetric.copyWith(color: p.ink, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

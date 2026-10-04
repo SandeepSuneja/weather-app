@@ -154,8 +154,6 @@ class WeatherlyLayout {
         color: _p.accent,
       );
 
-  double get citiesMapHeight => _hFrac(0.24, min: 160, max: 220);
-
   TextStyle get textChipLabel => sectionLabel(color: _p.ink);
 
   double get statGridAspectRatio {
