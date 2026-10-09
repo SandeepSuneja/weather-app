@@ -12,6 +12,9 @@ import '../services/weather_service.dart';
 import '../theme/weatherly_palette.dart';
 import '../theme/weatherly_responsive.dart';
 import '../utils/weather_debug_log.dart';
+import 'assistant_screen.dart';
+import 'charts_screen.dart';
+import '../widgets/home_premium/air_quality_section.dart';
 import '../widgets/home_premium/cities_screen.dart';
 import '../widgets/home_premium/dashboard_sections.dart';
 import '../widgets/home_premium/weatherly_bottom_nav.dart';
@@ -252,9 +255,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _addCurrentLocation() async {
+  Future<void> _toggleCurrentLocationSave() async {
     final w = _weather;
-    if (w == null || _currentSaved) return;
+    if (w == null) return;
+    if (_currentSaved) {
+      await _removeLocation(w.location);
+      if (mounted) _showSnack(AppStrings.removedFromCities);
+      return;
+    }
     _savedLocations = [..._savedLocations, w.location];
     await _savedRepo.save(_savedLocations);
     if (mounted) setState(() {});
@@ -343,10 +351,8 @@ class _HomeScreenState extends State<HomeScreen> {
       case WeatherlyNavItem.dashboard:
         break;
       case WeatherlyNavItem.charts:
-        _showSnack('Charts coming soon');
         break;
       case WeatherlyNavItem.assistant:
-        _showSnack('Assistant coming soon');
         break;
       case WeatherlyNavItem.cities:
         unawaited(_refreshSavedWeather());
@@ -439,6 +445,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final palette = context.palette;
 
     final isCities = _nav == WeatherlyNavItem.cities;
+    final isCharts = _nav == WeatherlyNavItem.charts;
+    final isAssistant = _nav == WeatherlyNavItem.assistant;
 
     return Scaffold(
       floatingActionButton: isCities
@@ -452,7 +460,16 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Icon(Icons.add, color: palette.onAccent),
             )
           : null,
-      body: isCities
+      body: isAssistant
+          ? AssistantScreen(
+              weather: weather,
+              loading: _loading,
+              onRefresh: _onRefresh,
+              onSettings: _showSettingsSheet,
+              onUseCurrentLocation: _goToCurrentLocation,
+              locationBusy: _loadingCurrentLocation,
+            )
+          : isCities
           ? CitiesScreen(
               searchController: _cityController,
               searchFocusNode: _citiesSearchFocus,
@@ -469,7 +486,16 @@ class _HomeScreenState extends State<HomeScreen> {
               onSearchSubmit: _submitCitySearch,
               onUseCurrentLocation: _goToCurrentLocation,
             )
-          : Container(
+          : isCharts
+              ? ChartsScreen(
+                  weather: weather,
+                  loading: _loading,
+                  onRefresh: _onRefresh,
+                  onSettings: _showSettingsSheet,
+                  onUseCurrentLocation: _goToCurrentLocation,
+                  locationBusy: _loadingCurrentLocation,
+                )
+              : Container(
               decoration: BoxDecoration(gradient: palette.pageBackground),
               child: Column(
                 children: [
@@ -481,10 +507,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       onUseCurrentLocation: _goToCurrentLocation,
                       locationBusy: _loadingCurrentLocation,
                       useCurrentLocationTooltip: AppStrings.useCurrentLocation,
-                      onSaveLocation: weather != null ? _addCurrentLocation : null,
+                      onSaveLocation: weather != null ? _toggleCurrentLocationSave : null,
                       locationSaved: _currentSaved,
-                      saveTooltip:
-                          _currentSaved ? AppStrings.saved : AppStrings.saveLocation,
+                      saveTooltip: _currentSaved
+                          ? AppStrings.savedRemove
+                          : AppStrings.saveLocation,
                       settingsTooltip: AppStrings.settingsTitle,
                     ),
                   ),
@@ -519,6 +546,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 AiInsightCard(data: weather),
                                 SizedBox(height: lay.gapM),
                                 MiniStatsGrid(data: weather),
+                                SizedBox(height: lay.sectionGap),
+                                AirQualitySection(pollution: weather.pollution),
                                 SizedBox(height: lay.sectionGap),
                               HourlyForecastSection(hourly: weather.hourly),
                               SizedBox(height: lay.sectionGap),

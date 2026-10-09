@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../l10n/app_strings.dart';
+import '../models/weather_chart_models.dart';
 import '../models/weather_models.dart';
 
 const _geoMatchDeg = 0.05;
@@ -31,10 +32,10 @@ class WeatherService {
       'current':
           'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code,pressure_msl,cloud_cover,dew_point_2m,precipitation,uv_index',
       'hourly':
-          'temperature_2m,weather_code,precipitation_probability,relative_humidity_2m',
+          'temperature_2m,apparent_temperature,weather_code,precipitation_probability,relative_humidity_2m,wind_speed_10m,precipitation,pressure_msl,cloud_cover,uv_index,dew_point_2m',
       'daily':
           'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,wind_speed_10m_max,sunrise,sunset',
-      'forecast_days': '5',
+      'forecast_days': '7',
       'timezone': 'auto',
     };
 
@@ -42,6 +43,7 @@ class WeatherService {
       'latitude': resolved.latitude.toString(),
       'longitude': resolved.longitude.toString(),
       'current': 'us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone',
+      'hourly': 'us_aqi,pm2_5,pm10',
       'timezone': 'auto',
     };
 
@@ -149,19 +151,56 @@ class WeatherService {
     final hourlyCodes = (hourly['weather_code'] as List).cast<int>();
     final hourlyPrecip = hourly['precipitation_probability'] as List?;
     final hourlyHumidity = hourly['relative_humidity_2m'] as List?;
+    final hourlyApparent = hourly['apparent_temperature'] as List?;
+    final hourlyWind = hourly['wind_speed_10m'] as List?;
+    final hourlyPrecipMm = hourly['precipitation'] as List?;
+    final hourlyPressure = hourly['pressure_msl'] as List?;
+    final hourlyCloud = hourly['cloud_cover'] as List?;
+    final hourlyUv = hourly['uv_index'] as List?;
+    final hourlyDew = hourly['dew_point_2m'] as List?;
 
+    final startHour = _hourlyWindowStartIndex(
+      current['time'] as String,
+      hourlyTimes,
+    );
+    const dashboardHourlyCount = 12;
+    const chartHourlyCount = 48;
     final hourForecasts = <HourForecast>[];
-    for (var i = 0; i < hourlyTimes.length && i < 12; i++) {
-      hourForecasts.add(
-        HourForecast(
-          time: hourlyTimes[i],
+    final chartHourly = <HourlyChartPoint>[];
+    for (var j = 0; j < chartHourlyCount; j++) {
+      final i = startHour + j;
+      if (i >= hourlyTimes.length) break;
+      final time = DateTime.parse(hourlyTimes[i]);
+      if (j < dashboardHourlyCount) {
+        hourForecasts.add(
+          HourForecast(
+            time: hourlyTimes[i],
+            temperature: hourlyTemps[i].toDouble(),
+            weatherCode: hourlyCodes[i],
+            precipitationProbability: hourlyPrecip?[i] as int?,
+            relativeHumidity: hourlyHumidity?[i] as int?,
+          ),
+        );
+      }
+      chartHourly.add(
+        HourlyChartPoint(
+          time: time,
           temperature: hourlyTemps[i].toDouble(),
-          weatherCode: hourlyCodes[i],
+          apparentTemperature: (hourlyApparent?[i] as num?)?.toDouble(),
           precipitationProbability: hourlyPrecip?[i] as int?,
           relativeHumidity: hourlyHumidity?[i] as int?,
+          windSpeed: (hourlyWind?[i] as num?)?.toDouble(),
+          precipitationMm: (hourlyPrecipMm?[i] as num?)?.toDouble(),
+          pressureMsl: (hourlyPressure?[i] as num?)?.toDouble(),
+          cloudCover: hourlyCloud?[i] as int?,
+          uvIndex: (hourlyUv?[i] as num?)?.toDouble(),
+          dewPoint: (hourlyDew?[i] as num?)?.toDouble(),
         ),
       );
     }
+
+    final aqHourlyMap = airQuality['hourly'] as Map<String, dynamic>?;
+    final airQualityHourly = _mapAirQualityHourly(aqHourlyMap, startHour, chartHourlyCount);
 
     final dailyTimes = (daily['time'] as List).cast<String>();
     final dailyMin = (daily['temperature_2m_min'] as List).cast<num>();
@@ -211,7 +250,7 @@ class WeatherService {
         uvIndex: (current['uv_index'] as num?)?.toDouble(),
       ),
       pollution: PollutionData(
-        usAqi: aqCurrent['us_aqi'] as int?,
+        usAqi: _readUsAqi(aqCurrent['us_aqi']),
         pm10: (aqCurrent['pm10'] as num?)?.toDouble(),
         pm2_5: (aqCurrent['pm2_5'] as num?)?.toDouble(),
         carbonMonoxide: (aqCurrent['carbon_monoxide'] as num?)?.toDouble(),
@@ -220,7 +259,40 @@ class WeatherService {
       ),
       hourly: hourForecasts,
       daily: dayForecasts,
+      charts: WeatherChartData(
+        hourly: chartHourly,
+        airQualityHourly: airQualityHourly,
+      ),
     );
+  }
+
+  List<HourlyAirQualityPoint> _mapAirQualityHourly(
+    Map<String, dynamic>? aqHourly,
+    int startHour,
+    int count,
+  ) {
+    if (aqHourly == null) return const [];
+    final times = aqHourly['time'] as List?;
+    if (times == null) return const [];
+    final timeStrings = times.cast<String>();
+    final aqiList = aqHourly['us_aqi'] as List?;
+    final pm25 = aqHourly['pm2_5'] as List?;
+    final pm10 = aqHourly['pm10'] as List?;
+
+    final points = <HourlyAirQualityPoint>[];
+    for (var j = 0; j < count; j++) {
+      final i = startHour + j;
+      if (i >= timeStrings.length) break;
+      points.add(
+        HourlyAirQualityPoint(
+          time: DateTime.parse(timeStrings[i]),
+          usAqi: _readUsAqi(aqiList?[i]),
+          pm2_5: (pm25?[i] as num?)?.toDouble(),
+          pm10: (pm10?[i] as num?)?.toDouble(),
+        ),
+      );
+    }
+    return points;
   }
 
   LocationOption _mapGeocodeToLocation(Map<String, dynamic> item) {
@@ -353,6 +425,37 @@ class WeatherService {
       return null;
     }
   }
+}
+
+int? _readUsAqi(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.round();
+  return null;
+}
+
+/// Index of the hourly slot that matches [currentTimeIso] (Open-Meteo hour start).
+int _hourlyWindowStartIndex(String currentTimeIso, List<String> hourlyTimes) {
+  if (hourlyTimes.isEmpty) return 0;
+
+  for (var i = 0; i < hourlyTimes.length; i++) {
+    if (hourlyTimes[i] == currentTimeIso) return i;
+  }
+
+  final current = DateTime.parse(currentTimeIso);
+  final currentHourStart = DateTime(
+    current.year,
+    current.month,
+    current.day,
+    current.hour,
+  );
+
+  for (var i = 0; i < hourlyTimes.length; i++) {
+    final slot = DateTime.parse(hourlyTimes[i]);
+    if (!slot.isBefore(currentHourStart)) return i;
+  }
+
+  return hourlyTimes.length - 1;
 }
 
 class WeatherFetchException implements Exception {}

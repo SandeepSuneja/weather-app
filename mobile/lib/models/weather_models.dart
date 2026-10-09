@@ -1,3 +1,5 @@
+import 'weather_chart_models.dart';
+
 class LocationOption {
   const LocationOption({
     this.id,
@@ -142,6 +144,7 @@ class WeatherResult {
     required this.pollution,
     required this.hourly,
     required this.daily,
+    required this.charts,
   });
 
   final String locationName;
@@ -152,6 +155,7 @@ class WeatherResult {
   final PollutionData pollution;
   final List<HourForecast> hourly;
   final List<DayForecast> daily;
+  final WeatherChartData charts;
 
   WeatherResult copyWith({LocationOption? location, String? locationName}) {
     return WeatherResult(
@@ -163,6 +167,7 @@ class WeatherResult {
       pollution: pollution,
       hourly: hourly,
       daily: daily,
+      charts: charts,
     );
   }
 }

@@ -24,6 +24,7 @@ class WeatherlyTopBar extends StatelessWidget {
     this.locationBusy = false,
     this.saveTooltip,
     this.settingsTooltip,
+    this.trailing,
   });
 
   final String title;
@@ -35,6 +36,7 @@ class WeatherlyTopBar extends StatelessWidget {
   final String? useCurrentLocationTooltip;
   final String? saveTooltip;
   final String? settingsTooltip;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -66,13 +68,14 @@ class WeatherlyTopBar extends StatelessWidget {
             ),
           if (onSaveLocation != null)
             IconButton(
-              onPressed: locationSaved ? null : onSaveLocation,
+              onPressed: onSaveLocation,
               tooltip: saveTooltip,
               icon: Icon(
                 locationSaved ? Icons.bookmark : Icons.bookmark_add_outlined,
-                color: locationSaved ? p.muted : p.accent,
+                color: p.accent,
               ),
             ),
+          if (trailing != null) trailing!,
           IconButton(
             onPressed: onSettings,
             tooltip: settingsTooltip,
@@ -528,14 +531,43 @@ class HourlyForecastSection extends StatefulWidget {
 }
 
 class _HourlyForecastSectionState extends State<HourlyForecastSection> {
-  int _selected = 1;
+  int _selected = 0;
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant HourlyForecastSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final prevFirst = oldWidget.hourly.isNotEmpty ? oldWidget.hourly.first.time : null;
+    final nextFirst = widget.hourly.isNotEmpty ? widget.hourly.first.time : null;
+    if (prevFirst != nextFirst) {
+      _selected = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(0);
+        }
+      });
+    }
+  }
+
+  String _hourLabel(HourForecast h, int index) {
+    if (index == 0) return 'NOW';
+    final dt = DateTime.tryParse(h.time);
+    if (dt == null) return h.time;
+    return DateFormat('h a').format(dt.toLocal());
+  }
 
   @override
   Widget build(BuildContext context) {
     if (widget.hourly.isEmpty) return const SizedBox.shrink();
     final lay = context.weatherly;
     final p = context.palette;
-    final timeFmt = DateFormat('h a');
+    final selectedIndex = _selected.clamp(0, widget.hourly.length - 1);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,19 +580,20 @@ class _HourlyForecastSectionState extends State<HourlyForecastSection> {
         SizedBox(
           height: lay.hourlyStripHeight,
           child: ListView.separated(
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
             itemCount: widget.hourly.length,
             separatorBuilder: (context, index) => SizedBox(width: lay.gapM),
             itemBuilder: (context, index) {
               final h = widget.hourly[index];
-              final selected = index == _selected.clamp(0, widget.hourly.length - 1);
-              final dt = DateTime.tryParse(h.time);
-              final label = index == 0
-                  ? 'NOW'
-                  : (dt != null ? timeFmt.format(dt.toLocal()) : h.time);
+              final selected = index == selectedIndex;
+              final label = _hourLabel(h, index);
+              final rain = h.precipitationProbability;
               return GestureDetector(
                 onTap: () => setState(() => _selected = index),
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
                   width: lay.hourlyCardWidth,
                   padding: EdgeInsets.all(lay.gapM),
                   decoration: weatherlyGlassDecoration(
@@ -576,16 +609,29 @@ class _HourlyForecastSectionState extends State<HourlyForecastSection> {
                         style: lay.sectionLabel(
                           color: selected ? p.gold : p.muted,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: lay.gapS),
                       Text(weatherEmoji(h.weatherCode), style: TextStyle(fontSize: lay.font(22))),
-                      SizedBox(height: lay.gapS),
+                      SizedBox(height: lay.gapXs),
                       Text(
                         '${h.temperature.round()}°',
                         style: lay.hourlyTemp(
                           color: selected ? p.onAccent : p.ink,
                         ),
                       ),
+                      if (rain != null) ...[
+                        SizedBox(height: lay.gapXs / 2),
+                        Text(
+                          '$rain%',
+                          style: lay.sectionLabel(
+                            color: selected
+                                ? p.insightFooter.withValues(alpha: 0.95)
+                                : p.muted.withValues(alpha: 0.75),
+                          ).copyWith(fontSize: lay.font(10)),
+                        ),
+                      ],
                     ],
                   ),
                 ),
